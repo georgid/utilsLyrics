@@ -12,6 +12,10 @@ import sys
 parentDir = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(sys.argv[0]) ), os.path.pardir)) 
 sys.path.append(parentDir)
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
+
     ##################################################################################
 
     ## TODO: callback function to load code. Put it in a different folder
@@ -53,7 +57,7 @@ def writeListOfListToTextFile(listOfList,headerLine, pathToOutputFile, toFlip=Fa
     
     outputFileHandle.close()
     
-    print "successfully written file: " , pathToOutputFile, "\n"
+    logger.info( "successfully written file: " , pathToOutputFile, "\n")
 
 
 ##################################################################################
@@ -80,7 +84,7 @@ def writeListToTextFile(inputList,headerLine, pathToOutputFile):
         outputFileHandle.write(listLine)
     
     outputFileHandle.close()
-    print "successfully written file: " , pathToOutputFile, "\n"
+    logger.info ("successfully written file: " , pathToOutputFile, "\n")
 
 
 
