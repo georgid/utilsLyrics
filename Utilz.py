@@ -8,6 +8,7 @@ import codecs
 import numpy
 import os
 import sys
+import difflib
 
 parentDir = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(sys.argv[0]) ), os.path.pardir)) 
 sys.path.append(parentDir)
@@ -18,7 +19,37 @@ logger.setLevel(logging.WARNING)
 
     ##################################################################################
 
-    ## TODO: callback function to load code. Put it in a different folder
+
+def matchSections(s1, s2, indices):
+    '''
+    MAtch automatically the section names in s2 to these in s1. 
+    @param indices: give it empty. 
+    @return  the inidices of sections in 1 correspondign to the ones in s2
+    '''
+  
+         
+    matcher = difflib.SequenceMatcher(None,s1,s2)
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == 'equal':
+            print 'The sections [%d:%d] of s1 and [%d:%d] of s2 are the same' % \
+                (i1, i2, j1, j2)
+            for c in range(i1,i2):
+                indices.append(c)
+
+        elif tag == 'insert':
+            print 'Insert %s from [%d:%d] of s2 into s1 at %d' % \
+                (s2[j1:j2], j1, j2, i1)
+            indices = matchSections(s1,s2[j1:j2], indices)
+
+
+        elif tag == 'replace':
+            print '{} replaced with {}. \n. Not implemented. Check manually'.format( s1[i1:i2], s2[j1:j2]) 
+        
+    return indices    
+            
+    
+## TODO: callback function to load code. Put it in a different folder
 def loadTextFile( pathToFile):
         
         # U means cross-platform  end-line character
