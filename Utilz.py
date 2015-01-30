@@ -9,6 +9,7 @@ import numpy
 import os
 import sys
 import difflib
+import glob
 
 parentDir = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(sys.argv[0]) ), os.path.pardir)) 
 sys.path.append(parentDir)
@@ -20,6 +21,21 @@ logger.setLevel(logging.WARNING)
     ##################################################################################
 
 
+def findFileByExtensions(pathToComposition, listExtensions):
+#     listExtensions = ["sections.txt", "sections.tsv", "sections.json"]
+    if not listExtensions:
+        sys.exit("{} is empty".format(listExtensions))
+
+    os.chdir(pathToComposition)
+
+    sectionFile = glob.glob("*." + listExtensions[0])
+    if not sectionFile:
+        sectionFile = glob.glob("*." + listExtensions[1])
+        if not sectionFile:
+                sectionFile = glob.glob("*." + listExtensions[2])
+    return sectionFile[0]
+
+
 def matchSections(s1, s2, indices):
     '''
     MAtch automatically the section names in s2 to these in s1. 
@@ -27,7 +43,11 @@ def matchSections(s1, s2, indices):
     @return  the inidices of sections in 1 correspondign to the ones in s2
     '''
   
-         
+    for (i,a) in enumerate(s1):
+        s1[i]= s1[i].lower()
+    for (i,a) in enumerate(s2):
+        s2[i]= s2[i].lower()
+     
     matcher = difflib.SequenceMatcher(None,s1,s2)
 
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
@@ -144,7 +164,7 @@ def getSectionNumberFromName(URIrecordingNoExt):
     while (-1 * index) <= len(underScoreTokens):
         token = str(underScoreTokens[index])
         if token.startswith('meyan') or token.startswith('zemin') or \
-        token.startswith('nakarat'):
+        token.startswith('nakarat') or token.startswith('aranagme') or  token.startswith('gazel')  :
             break
         index -=1
     
