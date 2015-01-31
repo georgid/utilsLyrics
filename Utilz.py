@@ -22,25 +22,29 @@ logger.setLevel(logging.WARNING)
 
 
 def findFileByExtensions(pathToComposition, listExtensions):
+    '''
+    @return: name (with no dir) of first found file 
+    '''
+    
 #     listExtensions = ["sections.txt", "sections.tsv", "sections.json"]
     if not listExtensions:
         sys.exit("{} is empty".format(listExtensions))
 
     os.chdir(pathToComposition)
 
-    sectionFile = glob.glob("*." + listExtensions[0])
-    if not sectionFile:
-        sectionFile = glob.glob("*." + listExtensions[1])
-        if not sectionFile:
-                sectionFile = glob.glob("*." + listExtensions[2])
-    return sectionFile[0]
+    sectionFiles = glob.glob("*." + listExtensions[0])
+    if not sectionFiles:
+        sectionFiles = glob.glob("*." + listExtensions[1])
+        if not sectionFiles:
+                sectionFiles = glob.glob("*." + listExtensions[2])
+    return sectionFiles
 
 
-def matchSections(s1, s2, indices):
+def matchSections(s1, s2, indicesS2):
     '''
     MAtch automatically the section names in s2 to these in s1. 
-    @param indices: give it empty. 
-    @return  the inidices of sections in 1 correspondign to the ones in s2
+    @param indicesS2: for each lelement in s2 -> to which element in s1 corresponds: give it empty. 
+    @return:  the inidices for s2 indicating the matched sections in s1 
     '''
   
     for (i,a) in enumerate(s1):
@@ -55,18 +59,20 @@ def matchSections(s1, s2, indices):
             print 'The sections [%d:%d] of s1 and [%d:%d] of s2 are the same' % \
                 (i1, i2, j1, j2)
             for c in range(i1,i2):
-                indices.append(c)
+                indicesS2.append(c)
 
         elif tag == 'insert':
             print 'Insert %s from [%d:%d] of s2 into s1 at %d' % \
                 (s2[j1:j2], j1, j2, i1)
-            indices = matchSections(s1,s2[j1:j2], indices)
+            indicesS2 = matchSections(s1,s2[j1:j2], indicesS2)
 
-
+        # section not present in score
         elif tag == 'replace':
-            print '{} replaced with {}. \n. Not implemented. Check manually'.format( s1[i1:i2], s2[j1:j2]) 
-        
-    return indices    
+            print '{} replaced with {}. add -1 because not present in score'.format( s1[i1:i2], s2[j1:j2])
+            for c in range(j1,j2):
+                indicesS2.append(-1) 
+           
+    return indicesS2
             
     
 ## TODO: callback function to load code. Put it in a different folder
@@ -163,8 +169,8 @@ def getSectionNumberFromName(URIrecordingNoExt):
     index = -1
     while (-1 * index) <= len(underScoreTokens):
         token = str(underScoreTokens[index])
-        if token.startswith('meyan') or token.startswith('zemin') or \
-        token.startswith('nakarat') or token.startswith('aranagme') or  token.startswith('gazel')  :
+        if token.startswith('meyan') or token.startswith('zemin') or   token.startswith('gazel') or \
+        token.startswith('nakarat') or token.startswith('aranagme') or  token.startswith('taksim')  :
             break
         index -=1
     
@@ -174,5 +180,60 @@ def getSectionNumberFromName(URIrecordingNoExt):
         sys.exit("please put the number of section before its name: e.g. *_2_meyan_* in the file name ")
     return int(whichSection)
 
+
+def renameFilesInDir(dirURI, listExtensions):
+    '''
+    renameSectionIndices in a dir with extension e.g. TextGrid
+    use method renameSectionIndex
+    '''
+    fileNames = findFileByExtensions(dirURI, listExtensions)
+    
+    for fileName in fileNames:
+        fileURI = os.path.join(dirURI, fileName)
+        renameSectionIndex(fileURI)
+        
     
     
+# rename
+    
+    
+
+def renameSectionIndex(URIrecording):
+    '''
+    rename. change number of score section to another number. Needed if score sections are renumbered in sections.tsv/json file/
+    NOTE: could be changed for other renaming purposes accordingly 
+    '''
+    underScoreTokens  = URIrecording.split("_")
+    index = -1
+    found = False
+#     check array in reverse order 
+    while (-1 * index) <= len(underScoreTokens):
+        token = str(underScoreTokens[index])
+        if token.startswith('meyan') or token.startswith('zemin') or   token.startswith('gazel') or \
+        token.startswith('nakarat') or token.startswith('aranagme') or  token.startswith('taksim')  :
+            found = True
+            break
+        # decrement
+        index -= 1
+    if not found:
+        sys.exit("please put the number of section before its name: e.g. *_2_meyan_* in the file name ") 
+    
+    print index
+    sectionIndex = int(underScoreTokens[index-1]) 
+    sectionIndex -= 1
+    underScoreTokens[index-1] = str(sectionIndex)
+    newURIrecording = "_".join(underScoreTokens)
+    print newURIrecording
+    
+    try:
+        os.rename(URIrecording, newURIrecording)
+        logger.info("renaming {} to {}".format(URIrecording, newURIrecording)) 
+    except Exception, error:
+        print str(error)
+
+
+if __name__ == '__main__':
+# test some functionality
+    extension = sys.argv[2]
+    listExts = [extension]
+    renameFilesInDir(sys.argv[1], listExts)
