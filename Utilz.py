@@ -181,11 +181,18 @@ def getSectionNumberFromName(URIrecordingNoExt):
     return int(whichSection)
 
 
-def renameFilesInDir(dirURI, listExtensions):
+def renameFilesInDir(argv):
     '''
     renameSectionIndices in a dir with extension e.g. TextGrid
     use method renameSectionIndex
     '''
+    if len(argv) != 3:
+        sys.exit("usage: {} <dirURI> <extension>".format(argv[0]))
+    
+    dirURI = argv[1]
+    extension = argv[2]
+    listExtensions = [extension]
+
     fileNames = findFileByExtensions(dirURI, listExtensions)
     
     for fileName in fileNames:
@@ -220,20 +227,18 @@ def renameSectionIndex(URIrecording):
     
     print index
     sectionIndex = int(underScoreTokens[index-1]) 
-    sectionIndex -= 1
+    sectionIndex += 1
     underScoreTokens[index-1] = str(sectionIndex)
     newURIrecording = "_".join(underScoreTokens)
     print newURIrecording
     
     try:
         os.rename(URIrecording, newURIrecording)
-        logger.info("renaming {} to {}".format(URIrecording, newURIrecording)) 
+        logger.warn("renaming {} to {}".format(URIrecording, newURIrecording)) 
     except Exception, error:
         print str(error)
 
 
 if __name__ == '__main__':
 # test some functionality
-    extension = sys.argv[2]
-    listExts = [extension]
-    renameFilesInDir(sys.argv[1], listExts)
+        renameFilesInDir(sys.argv)
