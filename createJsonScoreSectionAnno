@@ -1,0 +1,50 @@
+import codecs
+def loadTextFile( pathToFile):
+        
+        # U means cross-platform  end-line character
+        inputFileHandle = codecs.open(pathToFile, 'rU', 'utf-8')
+        
+        allLines = inputFileHandle.readlines()
+
+        
+        inputFileHandle.close()
+        
+        return allLines
+——————
+
+
+lines = loadTextFile('/Users/joro/Documents/Phd/UPF/turkish-makam-lyrics-2-audio-test-data/rast--turku--semai--gul_agaci--necip_mirkelamoglu/rast--turku--semai--gul_agaci--necip_mirkelamoglu.sections.tsv')
+lines = loadTextFile('/Users/joro/Documents/Phd/UPF/turkish-makam-lyrics-2-audio-test-data/rast--sarki--curcuna--nihansin_dideden--haci_faik_bey/rast--sarki--curcuna--nihansin_dideden--haci_faik_bey.sections.tsv')
+
+lines = loadTextFile('/Users/joro/Documents/Phd/UPF/turkish-makam-lyrics-2-audio-test-data/rast--sarki--sofyan--gelmez_oldu--dramali_hasan/rast--sarki--sofyan--gelmez_oldu--dramali_hasan.sections.tsv')
+
+————————
+
+VERSION from  tsv with start and end Note
+
+import json
+dictSections = {}
+sectionsList = []
+
+for line in lines:
+    tokens = line.split()
+    print tokens
+    currSection = {}
+    currSection['name']=tokens[0]
+    currSection['startNote']=tokens[1]
+    currSection['endNote']=tokens[2]
+
+    sectionsList.append(currSection)
+dictSections['sections']=sectionsList
+
+
+VERSION: from tsp with only startNote numbers
+
+
+————
+
+fp = open ('/Users/joro/Documents/Phd/UPF/turkish-makam-lyrics-2-audio-test-data/rast--turku--semai--gul_agaci--necip_mirkelamoglu/rast--turku--semai--gul_agaci--necip_mirkelamoglu.sections.json','w')
+json.dump(dictSections,fp)
+fp.close()
+
+————

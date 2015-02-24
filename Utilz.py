@@ -89,6 +89,21 @@ def loadTextFile( pathToFile):
         return allLines
 
 
+def readListOfListTextFile(fileURI):
+    allLines = loadTextFile(fileURI)
+    
+    allLines = allLines[1:]
+    
+    detectedTokenlist = []    
+    for line in   allLines:  
+        tokens =  line.split()
+        tsAndWord = [float(tokens[0]), float(tokens[1]), tokens[2]]
+        detectedTokenlist.append(tsAndWord)
+    
+    return detectedTokenlist
+        
+    
+
 ##################################################################################
 def writeListOfListToTextFile(listOfList,headerLine, pathToOutputFile, toFlip=False):    
     outputFileHandle = codecs.open(pathToOutputFile, 'w', 'utf-8')
@@ -241,4 +256,5 @@ def renameSectionIndex(URIrecording):
 
 if __name__ == '__main__':
 # test some functionality
-        renameFilesInDir(sys.argv)
+#     renameFilesInDir(sys.argv)
+       tokenList =  readListOfListTextFile('nihavent--sarki--curcuna--kimseye_etmem--kemani_sarkis_efendi/Melihat_Gulses/Melihat_Gulses_2_zemin_from_47_355984_to_68_789494.phrasesDurationSynthAligned')
