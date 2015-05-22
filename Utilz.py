@@ -8,6 +8,7 @@ import codecs
 import numpy
 import os
 import sys
+
 import difflib
 import glob
 
@@ -16,6 +17,7 @@ sys.path.append(parentDir)
 
 import logging
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 logger.setLevel(logging.WARNING)
 
     ##################################################################################
@@ -90,6 +92,10 @@ def loadTextFile( pathToFile):
 
 
 def readListOfListTextFile(fileURI):
+    '''
+    skips first line
+    assumes 3 tokens in list
+    '''
     allLines = loadTextFile(fileURI)
     
     allLines = allLines[1:]
@@ -100,9 +106,25 @@ def readListOfListTextFile(fileURI):
         tsAndWord = [float(tokens[0]), float(tokens[1]), tokens[2]]
         detectedTokenlist.append(tsAndWord)
     
-    return detectedTokenlist
-        
+    return detectedTokenlist        
+ 
+def readListOfListTextFile_gen(fileURI):
+    '''
+    generic
+    '''
+    allLines = loadTextFile(fileURI)
     
+    
+    tokenlist = []    
+    for line in   allLines:  
+        currLineTokenList = [] 
+
+        tokens =  line.split()
+        for token in tokens:
+             currLineTokenList.append(token)
+        tokenlist.append(currLineTokenList)
+    
+    return tokenlist    
 
 ##################################################################################
 def writeListOfListToTextFile(listOfList,headerLine, pathToOutputFile, toFlip=False):    
@@ -129,7 +151,7 @@ def writeListOfListToTextFile(listOfList,headerLine, pathToOutputFile, toFlip=Fa
     
     outputFileHandle.close()
     
-    logger.info( "successfully written file: " , pathToOutputFile, "\n")
+    logger.info ("successfully written file: {} \n".format( pathToOutputFile))
 
 
 ##################################################################################
@@ -156,7 +178,7 @@ def writeListToTextFile(inputList,headerLine, pathToOutputFile):
         outputFileHandle.write(listLine)
     
     outputFileHandle.close()
-    logger.info ("successfully written file: " , pathToOutputFile, "\n")
+    logger.info ("successfully written file: {} \n".format( pathToOutputFile))
 
 
 
@@ -194,6 +216,27 @@ def getSectionNumberFromName(URIrecordingNoExt):
     except Exception:
         sys.exit("please put the number of section before its name: e.g. *_2_meyan_* in the file name ")
     return int(whichSection)
+
+
+def getBeginTsFromName(URIrecordingNoExt):
+    '''
+    infer which section number form score is needed by the *_2_meyan_* in the file name
+    '''
+    underScoreTokens  = URIrecordingNoExt.split("_")
+    index = -1
+    while (-1 * index) <= len(underScoreTokens):
+        token = str(underScoreTokens[index])
+        if token.startswith('from') :
+            break
+        index -=1
+    
+    try:
+        startTsBase = underScoreTokens[index+1]
+        startTsRemainder = underScoreTokens[index+2]
+        startTs = startTsBase + '.' + startTsRemainder
+    except Exception:
+        sys.exit("no from or no number ts  it")
+    return float(startTs)
 
 
 def renameFilesInDir(argv):
@@ -249,7 +292,7 @@ def renameSectionIndex(URIrecording):
     
     try:
         os.rename(URIrecording, newURIrecording)
-        logger.warn("renaming {} to {}".format(URIrecording, newURIrecording)) 
+        logger.info("renaming {} to {}".format(URIrecording, newURIrecording)) 
     except Exception, error:
         print str(error)
 
