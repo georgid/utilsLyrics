@@ -18,7 +18,7 @@ sys.path.append(parentDir)
 import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.INFO)
 
     ##################################################################################
 
@@ -121,7 +121,8 @@ def readListOfListTextFile_gen(fileURI):
 
         tokens =  line.split()
         for token in tokens:
-             currLineTokenList.append(token)
+            token = float(token)
+            currLineTokenList.append(token)
         tokenlist.append(currLineTokenList)
     
     return tokenlist    
@@ -237,6 +238,16 @@ def getBeginTsFromName(URIrecordingNoExt):
     except Exception:
         sys.exit("no from or no number ts  it")
     return float(startTs)
+
+def getBeginTsFromNameJingju(URIrecordingNoExt):
+    '''
+    infer from the file name is begining timestamp
+    '''
+    underScoreTokens  = URIrecordingNoExt.split("_")
+    endTs = underScoreTokens[-1]
+    startTs = underScoreTokens[-2]
+    
+    return float(startTs), float(endTs)
 
 
 def renameFilesInDir(argv):
