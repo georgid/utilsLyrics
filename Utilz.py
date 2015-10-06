@@ -127,6 +127,22 @@ def readListOfListTextFile_gen(fileURI):
     
     return tokenlist    
 
+
+def readListTextFile(fileURI):
+    '''
+    generic
+    '''
+    allLines = loadTextFile(fileURI)
+    
+    tokenlist = []    
+    for line in   allLines:  
+
+        token =  line.strip()
+        token = float(token)
+        tokenlist.append(token)
+    
+    return tokenlist
+
 ##################################################################################
 def writeListOfListToTextFile(listOfList,headerLine, pathToOutputFile, toFlip=False):    
     outputFileHandle = codecs.open(pathToOutputFile, 'w', 'utf-8')
