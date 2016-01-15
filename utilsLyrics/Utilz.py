@@ -22,6 +22,16 @@ logger.setLevel(logging.INFO)
 
     ##################################################################################
 
+def loadDictFromTabFile(fileURI):
+    import csv
+    
+    dict_ = {}
+    with open(fileURI) as file_object:
+        for entry in file_object:
+            (key, val) = entry.split()
+            dict_[key] = val
+    return dict_
+
 
 def findFileByExtensions(pathToComposition, listExtensions):
     '''
@@ -41,6 +51,13 @@ def findFileByExtensions(pathToComposition, listExtensions):
                 sectionFiles = glob.glob("*." + listExtensions[2])
     return sectionFiles
 
+def findFilesByExtension(pathToComposition, extension):
+    '''
+    with pattern name_name.wav
+    '''
+    sectionFiles = glob.glob(pathToComposition + "[a-z]*_*[a-z]." + extension)
+
+    return sectionFiles
 
 def matchSections(s1, s2, indicesS2):
     '''
@@ -103,7 +120,12 @@ def readListOfListTextFile(fileURI):
     detectedTokenlist = []    
     for line in   allLines:  
         tokens =  line.split()
-        tsAndWord = [float(tokens[0]), float(tokens[1]), tokens[2]]
+        if len(tokens) == 4:
+            
+            tsAndWord = [float(tokens[0]), float(tokens[1]), tokens[2], int(tokens[3])]
+        else:
+            tsAndWord = [float(tokens[0]), float(tokens[1]), tokens[2] ]
+        
         detectedTokenlist.append(tsAndWord)
     
     return detectedTokenlist        
@@ -121,11 +143,16 @@ def readListOfListTextFile_gen(fileURI):
 
         tokens =  line.split()
         for token in tokens:
-            token = float(token)
+            try:
+                token = float(token)
+            except ValueError:
+                pass
             currLineTokenList.append(token)
         tokenlist.append(currLineTokenList)
     
     return tokenlist    
+
+
 
 
 def readListTextFile(fileURI):
@@ -204,6 +231,7 @@ def writeListToTextFile(inputList,headerLine, pathToOutputFile):
     ########### statistics on a array
 def getMeanAndStDevError(alignmentErrors):
         
+        # convert to numpy array
         absalignmentErrors = [0] * len(alignmentErrors)
         for index, alError in enumerate(alignmentErrors):
             absalignmentErrors[index] = abs(alError)
@@ -232,7 +260,35 @@ def getSectionNumberFromName(URIrecordingNoExt):
         whichSection = underScoreTokens[index-1]
     except Exception:
         sys.exit("please put the number of section before its name: e.g. *_2_meyan_* in the file name ")
-    return int(whichSection)
+    
+    URIWholeRecordingNoExt = ''
+    lenTokensAudioName = len(underScoreTokens) + index - 1
+    for i in range(lenTokensAudioName):
+        URIWholeRecordingNoExt += underScoreTokens[i]
+        if i != lenTokensAudioName - 1:
+            URIWholeRecordingNoExt += '_' 
+
+    return int(whichSection), URIWholeRecordingNoExt
+
+def getMelodicStructFromName(URIrecordingNoExt):
+    underScoreTokens  = URIrecordingNoExt.split("_")
+    index = -1
+    while (-1 * index) <= len(underScoreTokens):
+        token = str(underScoreTokens[index])
+        if token.startswith('from') :
+            break
+        index -=1
+        
+    URIWholeRecordingNoExt = ''    
+    lenTokensAudioName = len(underScoreTokens) + index - 1
+    for i in range(lenTokensAudioName):
+        URIWholeRecordingNoExt += underScoreTokens[i]
+        if i != lenTokensAudioName - 1:
+            URIWholeRecordingNoExt += '_' 
+
+    
+    
+    return   underScoreTokens[index-1], URIWholeRecordingNoExt
 
 
 def getBeginTsFromName(URIrecordingNoExt):
@@ -253,7 +309,30 @@ def getBeginTsFromName(URIrecordingNoExt):
         startTs = startTsBase + '.' + startTsRemainder
     except Exception:
         sys.exit("no from or no number ts  it")
+   
     return float(startTs)
+
+def getEndTsFromName(URIrecordingNoExt):
+    '''
+    infer which section number form score is needed by the *_2_meyan_* in the file name
+    '''
+    underScoreTokens  = URIrecordingNoExt.split("_")
+    index = -1
+    while (-1 * index) <= len(underScoreTokens):
+        token = str(underScoreTokens[index])
+        if token.startswith('to') :
+            break
+        index -=1
+    
+    try:
+        endTsBase = underScoreTokens[index+1]
+        startTsRemainder = underScoreTokens[index+2]
+        endTs = endTsBase + '.' + startTsRemainder
+    except Exception:
+        sys.exit("no from or no number ts  it")
+   
+    return float(endTs)
+
 
 def getBeginTsFromNameJingju(URIrecordingNoExt):
     '''
@@ -322,6 +401,25 @@ def renameSectionIndex(URIrecording):
         logger.info("renaming {} to {}".format(URIrecording, newURIrecording)) 
     except Exception, error:
         print str(error)
+
+def tokenList2TabFile( listTsAndTokens,  baseNameAudioFile, whichSuffix, timeShift=0):
+    '''
+    convenience method. 
+    '''
+    
+    # timeshift
+    for index in range(len(listTsAndTokens)):
+        listTsAndTokens[index][0] +=  timeShift
+        listTsAndTokens[index][1] +=  timeShift
+#         if (len(listTsAndTokens[index]) == 3): 
+#             del listTsAndTokens[index][1]
+         
+    phonemeAlignedfileName = baseNameAudioFile + whichSuffix
+    
+    writeListOfListToTextFile(listTsAndTokens, 'startTs \t endTs \t phonemeOrSyllorWord \t beginNoteNumber \n', phonemeAlignedfileName)
+#     logging.debug('phoneme level alignment written to file: ',  phonemeAlignedfileName)
+    return phonemeAlignedfileName
+
 
 
 if __name__ == '__main__':
