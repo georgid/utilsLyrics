@@ -11,6 +11,7 @@ import sys
 
 import difflib
 import glob
+import urllib2
 
 parentDir = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(sys.argv[0]) ), os.path.pardir)) 
 sys.path.append(parentDir)
@@ -420,7 +421,11 @@ def tokenList2TabFile( listTsAndTokens,  baseNameAudioFile, whichSuffix, timeShi
 #     logging.debug('phoneme level alignment written to file: ',  phonemeAlignedfileName)
     return phonemeAlignedfileName
 
-
+def fetchFileFromURL(URL, outputFileURI):
+        response = urllib2.urlopen(URL)
+        a = response.read()
+        with open(outputFileURI,'w') as f:
+            f.write(a)
 
 if __name__ == '__main__':
 # test some functionality
