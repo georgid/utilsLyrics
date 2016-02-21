@@ -351,18 +351,19 @@ def renameFilesInDir(argv):
     renameSectionIndices in a dir with extension e.g. TextGrid
     use method renameSectionIndex
     '''
-    if len(argv) != 3:
-        sys.exit("usage: {} <dirURI> <extension>".format(argv[0]))
+    if len(argv) != 4:
+        sys.exit("usage: {} <dirURI> <extension> <new file Name>".format(argv[0]))
     
     dirURI = argv[1]
     extension = argv[2]
     listExtensions = [extension]
-
+    newFileName = argv[3]
+    
     fileNames = findFileByExtensions(dirURI, listExtensions)
     
     for fileName in fileNames:
         fileURI = os.path.join(dirURI, fileName)
-        renameSectionIndex(fileURI)
+        renameSectionIndex2(fileURI, newFileName)
         
     
     
@@ -403,6 +404,41 @@ def renameSectionIndex(URIrecording):
     except Exception, error:
         print str(error)
 
+def renameSectionIndex2(URIrecording, newName):
+    '''
+    rename. change name of TextGrid file with old naming to new naming of autoamtically fetched file from dunya.get_mp3_recording.
+    NOTE: could be changed for other renaming purposes accordingly 
+    '''
+    underScoreTokens  = URIrecording.split("_")
+    index = -1
+    found = False
+#     check array in reverse order 
+    while (-1 * index) <= len(underScoreTokens):
+        token = str(underScoreTokens[index])
+        if token.startswith('meyan') or token.startswith('zemin') or   token.startswith('gazel') or \
+        token.startswith('nakarat') or token.startswith('aranagme') or  token.startswith('taksim')  :
+            found = True
+            break
+        # decrement
+        index -= 1
+    if not found:
+        sys.exit("please put the number of section before its name: e.g. *_2_meyan_* in the file name ") 
+    
+    print index
+    sectionIndex = int(underScoreTokens[index+2]) 
+#     sectionIndex += 1
+    
+    newURIrecording = newName + '_' + underScoreTokens[index+2] + '.' + underScoreTokens[index+3]  + '_' +  underScoreTokens[index+5] + '.' + underScoreTokens[index+6]   
+    print newURIrecording
+    
+    try:
+        os.rename(URIrecording, newURIrecording)
+        logger.info("renaming {} to {}".format(URIrecording, newURIrecording)) 
+    except Exception, error:
+        print str(error)
+
+
+
 def tokenList2TabFile( listTsAndTokens,  baseNameAudioFile, whichSuffix, timeShift=0):
     '''
     convenience method. 
@@ -429,5 +465,5 @@ def fetchFileFromURL(URL, outputFileURI):
 
 if __name__ == '__main__':
 # test some functionality
-#     renameFilesInDir(sys.argv)
-       tokenList =  readListOfListTextFile('nihavent--sarki--curcuna--kimseye_etmem--kemani_sarkis_efendi/Melihat_Gulses/Melihat_Gulses_2_zemin_from_47_355984_to_68_789494.phrasesDurationSynthAligned')
+    renameFilesInDir(sys.argv)
+#        tokenList =  readListOfListTextFile('nihavent--sarki--curcuna--kimseye_etmem--kemani_sarkis_efendi/Melihat_Gulses/Melihat_Gulses_2_zemin_from_47_355984_to_68_789494.phrasesDurationSynthAligned')
