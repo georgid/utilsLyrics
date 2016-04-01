@@ -196,7 +196,7 @@ def writeListOfListToTextFile(listOfList,headerLine, pathToOutputFile, toFlip=Fa
     
     outputFileHandle.close()
     
-    logger.info ("successfully written file: {} \n".format( pathToOutputFile))
+    logger.info ("successfully written file: \n {} \n".format( pathToOutputFile))
 
 
 ##################################################################################
@@ -223,7 +223,7 @@ def writeListToTextFile(inputList,headerLine, pathToOutputFile):
         outputFileHandle.write(listLine)
     
     outputFileHandle.close()
-    logger.info ("successfully written file: {} \n".format( pathToOutputFile))
+    logger.info ("successfully written file: \n {} \n".format( pathToOutputFile))
 
 
 
